@@ -35,7 +35,7 @@ jobs:
 
       - name: Check GitHub access
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           python - <<'PY'
           import os
@@ -44,7 +44,7 @@ jobs:
 
           token = os.getenv("GITHUB_TOKEN", "").strip()
           if not token:
-              print("Missing Actions secret: GH_TOKEN")
+              print("Missing GITHUB_TOKEN")
               sys.exit(1)
 
           headers = {
@@ -52,11 +52,6 @@ jobs:
               "Accept": "application/vnd.github+json",
               "X-GitHub-Api-Version": "2022-11-28",
           }
-
-          user = requests.get("https://api.github.com/user", headers=headers, timeout=10)
-          if user.status_code != 200:
-              print(f"GitHub auth check failed: {user.status_code}")
-              sys.exit(1)
 
           repo = requests.get("https://api.github.com/repos/khjgate/NewsLetter", headers=headers, timeout=10)
           if repo.status_code != 200:
@@ -68,7 +63,7 @@ jobs:
 
       - name: Run newsletter sender
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
