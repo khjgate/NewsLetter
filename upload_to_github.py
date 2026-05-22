@@ -19,7 +19,6 @@ EXCLUDED_DIRS = {
 EXCLUDED_FILES = {
     "config.txt",
     "github_upload_log.txt",
-    "newsletter_preview_auto.html",
 }
 
 EXCLUDED_SUFFIXES = {
