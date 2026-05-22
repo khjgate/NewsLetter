@@ -1,0 +1,82 @@
+# 뉴스레터 자동 발송 GitHub Actions 워크플로우
+# 매일 월요일 오전 8시 (KST) 자동 실행
+
+name: Newsletter Auto Send
+
+on:
+  # 매일 오전 8시 KST (= 전날 23:00 UTC)
+  schedule:
+    - cron: '0 23 * * *'
+  # 수동 실행도 가능
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  send-newsletter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check GitHub access
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          python - <<'PY'
+          import os
+          import sys
+          import requests
+
+          token = os.getenv("GITHUB_TOKEN", "").strip()
+          if not token:
+              print("Missing Actions secret: GH_TOKEN")
+              sys.exit(1)
+
+          headers = {
+              "Authorization": f"Bearer {token}",
+              "Accept": "application/vnd.github+json",
+              "X-GitHub-Api-Version": "2022-11-28",
+          }
+
+          user = requests.get("https://api.github.com/user", headers=headers, timeout=10)
+          if user.status_code != 200:
+              print(f"GitHub auth check failed: {user.status_code}")
+              sys.exit(1)
+
+          repo = requests.get("https://api.github.com/repos/khjgate/NewsLetter", headers=headers, timeout=10)
+          if repo.status_code != 200:
+              print(f"GitHub repo access check failed: {repo.status_code}")
+              sys.exit(1)
+
+          print("GitHub access check passed.")
+          PY
+
+      - name: Run newsletter sender
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
+          DISPLAY_EMAIL: ${{ secrets.DISPLAY_EMAIL }}
+        run: |
+          python newsletter_sender.py
+
+      - name: Commit and push HTML file
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add newsletter_preview_auto.html || true
+          git commit -m "Update newsletter $(date +'%Y-%m-%d')" || true
+          git push || true
