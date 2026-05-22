@@ -61,6 +61,31 @@ jobs:
           print("GitHub access check passed.")
           PY
 
+      - name: Check email secrets
+        env:
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
+          DISPLAY_EMAIL: ${{ secrets.DISPLAY_EMAIL }}
+        run: |
+          python - <<'PY'
+          import os
+          import sys
+
+          required = [
+              "SENDER_EMAIL",
+              "EMAIL_PASSWORD",
+              "RECEIVER_EMAIL",
+              "DISPLAY_EMAIL",
+          ]
+          missing = [name for name in required if not os.getenv(name, "").strip()]
+          if missing:
+              print("Missing Actions secrets: " + ", ".join(missing))
+              sys.exit(1)
+
+          print("Email secret check passed.")
+          PY
+
       - name: Run newsletter sender
         env:
           GITHUB_TOKEN: ${{ github.token }}
