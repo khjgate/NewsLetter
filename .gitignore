@@ -1,0 +1,13 @@
+# 민감 설정 파일
+config.txt
+
+# 실행 로그/출력
+github_upload_log.txt
+newsletter_preview_auto.html
+
+# 캐시/바이너리
+__pycache__/
+*.pyc
+
+# 로컬 백업 산출물
+Bak/
