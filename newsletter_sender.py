@@ -995,6 +995,10 @@ def validate_email_config():
 
 def run_lowpacket_check():
     """프로그램 시작 전 `LowPacket.py`를 실행하여 패킷 점검을 수행"""
+    if os.environ.get('GITHUB_ACTIONS') == 'true':
+        print('Skipping LowPacket check in GitHub Actions.')
+        return True
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
     workspace_dir = os.path.dirname(current_dir)
     lowpacket_path = os.path.join(workspace_dir, 'LowPacket', 'LowPacket.py')
