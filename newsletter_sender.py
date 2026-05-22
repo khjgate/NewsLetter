@@ -96,20 +96,12 @@ def validate_github_token(token):
     }
 
     try:
-        user_response = requests.get('https://api.github.com/user', headers=headers, timeout=SHORT_REQUEST_TIMEOUT)
-    except requests.RequestException as error:
-        return False, f'GitHub 인증 확인 요청 실패: {error}'
-
-    if user_response.status_code == 401:
-        return False, 'GitHub 토큰이 만료되었거나 잘못되었습니다. 환경변수 `GITHUB_TOKEN`(또는 CI Secrets)을 갱신하세요.'
-    if user_response.status_code != 200:
-        return False, f'GitHub 사용자 인증 확인 실패: {user_response.status_code} - {user_response.text}'
-
-    try:
         repo_response = requests.get(f'https://api.github.com/repos/{GITHUB_REPO}', headers=headers, timeout=SHORT_REQUEST_TIMEOUT)
     except requests.RequestException as error:
         return False, f'GitHub 저장소 확인 요청 실패: {error}'
 
+    if repo_response.status_code == 401:
+        return False, 'GitHub 토큰이 만료되었거나 잘못되었습니다. 환경변수 `GITHUB_TOKEN`(또는 CI Secrets)을 갱신하세요.'
     if repo_response.status_code == 404:
         return False, f'저장소 `{GITHUB_REPO}` 접근 권한이 없거나 저장소를 찾을 수 없습니다.'
     if repo_response.status_code != 200:
