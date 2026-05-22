@@ -1083,7 +1083,8 @@ if __name__ == '__main__':
     print(f'브라우저 버전 HTML 저장 완료: {preview_path}')
 
     # 웹브라우저로 자동 오픈
-    webbrowser.open('file://' + preview_path)
+    if os.environ.get('GITHUB_ACTIONS') != 'true':
+        webbrowser.open('file://' + preview_path)
 
     # GitHub Pages용 HTML 업로드 시도
     github_uploaded = False
